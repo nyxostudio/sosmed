@@ -2,684 +2,686 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nyxo Studio - Full Interactive</title>
-    <!-- Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
-    <!-- Icons -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nyxo Studio - Interactive Hub</title>
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Animation Engine -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&family=Fira+Code:wght@400&display=swap" rel="stylesheet">
+    <!-- Anime.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 
     <style>
+        /* --- 1. RESET & VARIABLES --- */
         :root {
             --neon-blue: #00f3ff;
             --neon-purple: #bc13fe;
             --neon-green: #0aff0a;
             --neon-pink: #ff0055;
             --bg-dark: #050505;
-            --glass: rgba(10, 10, 20, 0.7);
-            --font-main: 'Orbitron', sans-serif;
+            --glass: rgba(10, 10, 20, 0.85);
+            --border-glass: rgba(255, 255, 255, 0.1);
+            --font-head: 'Orbitron', sans-serif;
             --font-body: 'Rajdhani', sans-serif;
+            --font-code: 'Fira Code', monospace;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         
         body {
             background-color: var(--bg-dark);
             color: #fff;
             font-family: var(--font-body);
-            overflow: hidden;
+            overflow: hidden; /* Mencegah scroll radial menu */
             height: 100vh;
             width: 100vw;
             position: relative;
         }
 
-        /* --- BACKGROUND --- */
-        .video-bg {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover;
-            opacity: 0.3;
-            z-index: -2;
-            filter: brightness(0.5);
+        /* --- 2. BACKGROUND --- */
+        #bg-video {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; opacity: 0.4; z-index: 0; pointer-events: none;
+        }
+        .overlay {
+            position: fixed; inset: 0; background: radial-gradient(circle at center, transparent 0%, #000 100%);
+            z-index: 1; pointer-events: none;
         }
 
-        .overlay-gradient {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, rgba(0,0,0,0) 0%, #000 90%);
-            z-index: -1;
-            pointer-events: none;
-        }
+        /* --- 3. HERO TEXT --- */
+        /* HERO TEXT POSITION & DESC ANIM */
+    #hero {
+        position: absolute;
+        top: 45%; /* Naik sedikit ke atas */
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        pointer-events: none; 
+        z-index: 5; 
+        width: 85%;
+    }
 
-        /* --- HERO --- */
-        #hero {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            pointer-events: none;
-            z-index: 0;
-            transition: opacity 0.5s;
-        }
-
+    p.desc {
+    font-family: var(--font-body);
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    color: #eee;
+    line-height: 1.8;
+    letter-spacing: 1px;
+    text-align: center;
+    max-width: 700px;
+    margin: 20px auto 0 auto;
+    padding: 15px 20px;
+    background: rgba(0,0,0,0.5);
+    border-left: 4px solid var(--neon-blue);
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0,243,255,0.2);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 1.8s ease-out;
+}
         h1.title {
-            font-family: var(--font-main);
-            font-size: 3.5rem;
-            text-transform: uppercase;
-            letter-spacing: 8px;
-            color: #fff;
-            text-shadow: 0 0 15px var(--neon-blue), 0 0 30px var(--neon-purple);
-            margin-bottom: 10px;
+            font-family: var(--font-head); font-size: clamp(2rem, 6vw, 4rem);
+            color: #fff; text-shadow: 0 0 20px var(--neon-blue); margin-bottom: 10px;
+            animation: pulse 3s infinite;
+        }
+        p.desc { font-size: clamp(1rem, 2.5vw, 1.4rem); color: #ccc; letter-spacing: 2px; text-transform: uppercase; }
+        
+        @keyframes pulse { 
+            0%, 100% { text-shadow: 0 0 20px var(--neon-blue); } 
+            50% { text-shadow: 0 0 40px var(--neon-purple), 0 0 10px #fff; } 
         }
 
-        p.subtitle {
-            font-size: 1.2rem;
-            color: #aaa;
-            letter-spacing: 3px;
-        }
-
-        /* --- RADIAL CONTAINER --- */
+        /* --- 4. RADIAL MENU WRAPPER --- */
+        /* Container utama yang bisa digeser */
         #radial-wrapper {
             position: absolute;
-            /* Start at center */
-            top: 50%; 
-            left: 50%; 
-            width: 0; 
-            height: 0; 
-            z-index: 100;
+            /* Default Position: Kanan Atas */
+            top: 80px; 
+            right: 60px;
+            width: 60px; height: 60px;
+            z-index: 1000;
         }
 
-        /* --- MAIN BUTTON (HAMBURGER) --- */
-        .main-btn {
-            position: absolute;
-            width: 70px;
-            height: 70px;
-            top: -35px; /* Center alignment */
-            left: -35px;
-            background: var(--glass);
+        /* Tombol Bulat Utama */
+        .trigger-btn {
+            position: absolute; top: 0; left: 0;
+            width: 60px; height: 60px;
+            background: rgba(0, 0, 0, 0.8);
             border: 2px solid var(--neon-blue);
             border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            display: flex; justify-content: center; align-items: center;
             cursor: grab;
-            box-shadow: 0 0 15px var(--neon-blue);
+            box-shadow: 0 0 15px var(--neon-blue), inset 0 0 10px rgba(0, 243, 255, 0.2);
+            z-index: 1002;
             transition: all 0.3s ease;
-            z-index: 101;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(5px);
         }
-
-        .main-btn:active { cursor: grabbing; transform: scale(0.95); }
         
-        .main-btn i {
-            font-size: 24px;
-            color: white;
-            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        .trigger-btn:active { cursor: grabbing; transform: scale(0.95); }
+        .trigger-btn i { font-size: 24px; color: var(--neon-blue); transition: all 0.4s; }
+        
+        /* State Active Menu Terbuka */
+        .trigger-btn.active { 
+            border-color: var(--neon-pink); 
+            box-shadow: 0 0 20px var(--neon-pink), inset 0 0 10px rgba(255, 0, 85, 0.2); 
+            transform: rotate(90deg);
+        }
+        .trigger-btn.active i { 
+            transform: rotate(90deg); /* Ikon jadi X */ 
+            color: var(--neon-pink); 
         }
 
-        .main-btn.open i { transform: rotate(135deg); color: var(--neon-pink); border-color: var(--neon-pink); }
-        .main-btn.open { border-color: var(--neon-pink); box-shadow: 0 0 20px var(--neon-pink); }
+        /* Container untuk item anak */
+        #items-container {
+            position: absolute; top: 30px; left: 30px; /* Pusat di tengah tombol */
+            width: 0; height: 0;
+            pointer-events: none; /* Klik tembus saat kosong */
+            z-index: 1001;
+        }
 
-        /* --- RADIAL ITEMS --- */
+        /* Item Menu (Lingkaran Kecil) */
         .radial-item {
             position: absolute;
-            width: 55px;
-            height: 55px;
-            top: -27.5px;
-            left: -27.5px;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.8);
+            width: 50px; height: 50px;
+            top: -25px; left: -25px;
+            background: rgba(10, 10, 20, 0.95);
             border: 1px solid rgba(255,255,255,0.3);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
             font-size: 18px;
-            color: white;
-            opacity: 0;
-            pointer-events: none;
-            transition: background 0.3s, transform 0.2s, border-color 0.3s;
+            color: #fff;
+            opacity: 0; /* Mulai invisible */
+            pointer-events: none; /* Mulai tidak bisa diklik */
             cursor: pointer;
             backdrop-filter: blur(4px);
-            z-index: 50;
+            transition: background 0.2s, transform 0.2s, border-color 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
         }
 
-        .radial-item i { margin-bottom: 2px; }
-        
+        /* Label Kecil di bawah item */
         .radial-item span {
-            font-size: 9px;
-            position: absolute;
-            bottom: -20px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            background: rgba(0,0,0,0.9);
-            padding: 2px 6px;
-            border-radius: 4px;
-            white-space: nowrap;
-            pointer-events: none;
+            position: absolute; bottom: -30px;
+            background: rgba(0,0,0,0.8); padding: 4px 8px; border-radius: 4px;
+            font-size: 11px; white-space: nowrap; opacity: 0; transition: opacity 0.3s;
+            pointer-events: none; border: 1px solid #444;
+            color: #fff; font-family: var(--font-body);
+            text-shadow: 0 0 5px #000;
         }
+        
+        .radial-item:hover { 
+            transform: scale(1.1) !important; /* Force scale on hover */
+            z-index: 1003; 
+            border-color: #fff;
+        }
+        .radial-item:hover span { opacity: 1; }
 
-        .radial-item:hover { transform: scale(1.1); z-index: 102; }
-        .radial-item:hover span { opacity: 1; bottom: -25px; }
+        /* Kategori Warna Item */
+        .item-cat { border-color: var(--neon-purple); color: var(--neon-purple); }
+        .item-cat:hover { background: rgba(188, 19, 254, 0.2); box-shadow: 0 0 15px var(--neon-purple); }
 
-        /* Category Styles */
         .item-dev { border-color: var(--neon-blue); color: var(--neon-blue); }
         .item-dev:hover { background: rgba(0, 243, 255, 0.2); box-shadow: 0 0 15px var(--neon-blue); }
 
         .item-soc { border-color: var(--neon-green); color: var(--neon-green); }
         .item-soc:hover { background: rgba(10, 255, 10, 0.2); box-shadow: 0 0 15px var(--neon-green); }
 
-        /* --- MODAL CONTENT --- */
+        .item-back { border-color: var(--neon-pink); color: var(--neon-pink); }
+        .item-back:hover { background: rgba(255, 0, 85, 0.2); box-shadow: 0 0 15px var(--neon-pink); }
+
+        /* --- 5. MODAL PANEL (SIDE PANEL) --- */
         #modal-panel {
-            position: fixed;
-            right: 20px;
-            top: 50%;
-            transform: translate(120%, -50%);
-            width: 450px;
-            max-width: 90vw;
-            max-height: 90vh;
-            background: rgba(12, 12, 16, 0.95);
-            border: 1px solid var(--neon-blue);
-            border-radius: 12px;
-            padding: 25px;
-            z-index: 200;
-            transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
-            backdrop-filter: blur(15px);
+            position: fixed; top: 0; right: 0;
+            width: 400px; max-width: 90vw; height: 100vh;
+            background: rgba(5, 5, 8, 0.98);
+            border-left: 1px solid var(--neon-blue);
+            z-index: 2000;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             overflow-y: auto;
+            padding: 25px;
+            box-shadow: -10px 0 40px rgba(0,0,0,0.9);
+            backdrop-filter: blur(20px);
         }
-
-        #modal-panel.active { transform: translate(0, -50%); }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 10px;
-        }
-
-        #modal-title { font-family: var(--font-main); font-size: 1.8rem; color: var(--neon-blue); }
-        .close-btn { cursor: pointer; font-size: 1.5rem; color: var(--neon-pink); transition: color 0.3s; }
-        .close-btn:hover { color: #fff; }
-
-        #modal-desc { font-size: 1.1rem; line-height: 1.6; color: #ddd; margin-bottom: 20px; }
-
-        /* --- STEPS SECTION --- */
-        .steps-container { margin-bottom: 20px; }
-        .steps-title { 
-            font-family: var(--font-main); 
-            color: var(--neon-purple); 
-            font-size: 1.1rem; 
-            margin-bottom: 10px; 
-            display: flex; align-items: center; gap: 8px;
-        }
+        #modal-panel.open { transform: translateX(0); }
         
-        .step-list { list-style: none; padding-left: 0; }
-        
-        .step-item {
-            background: rgba(255,255,255,0.05);
-            border-left: 3px solid var(--neon-purple);
-            padding: 10px 15px;
-            margin-bottom: 8px;
-            border-radius: 0 4px 4px 0;
-            font-size: 0.95rem;
-            color: #ccc;
-        }
-        
-        .step-item strong { color: #fff; margin-right: 5px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #333; }
+        #modal-title { font-family: var(--font-head); color: var(--neon-blue); font-size: 2rem; text-transform: uppercase; }
+        .close-modal { cursor: pointer; font-size: 1.8rem; color: var(--neon-pink); transition: 0.3s; }
+        .close-modal:hover { color: #fff; transform: rotate(90deg); }
 
-        /* --- CODE BLOCK --- */
-        .code-wrapper {
-            background: #1e1e1e;
-            border-radius: 6px;
-            overflow: hidden;
-            border: 1px solid #333;
-        }
+        .section-title { font-family: var(--font-head); color: var(--neon-purple); font-size: 1.2rem; margin: 25px 0 10px 0; border-left: 4px solid var(--neon-purple); padding-left: 10px; text-transform: uppercase; }
+        .text-content { font-size: 1.05rem; line-height: 1.6; color: #ddd; margin-bottom: 15px; }
         
-        .code-header {
-            background: #252526;
-            padding: 5px 10px;
-            font-size: 0.8rem;
-            color: #888;
-            border-bottom: 1px solid #333;
+        /* Code Block Styling */
+        .code-block { 
+            background: #111; 
+            border: 1px solid #333; 
+            border-radius: 8px; 
+            padding: 15px; 
+            font-family: var(--font-code); 
+            color: #a9b7c6; 
+            font-size: 0.9rem; 
+            overflow-x: auto; 
+            white-space: pre-wrap; 
+            position: relative;
+            box-shadow: inset 0 0 20px #000;
+        }
+        .code-block::before {
+            content: 'CODE'; position: absolute; top: 5px; right: 10px; font-size: 0.6rem; color: #555;
         }
 
-        pre { margin: 0; padding: 15px; overflow-x: auto; font-family: 'Consolas', monospace; font-size: 0.9rem; color: #d4d4d4; }
-        
-        /* Simple Syntax Highlighting Classes */
-        .hl-kw { color: #c586c0; } /* Keyword */
-        .hl-str { color: #ce9178; } /* String */
-        .hl-fn { color: #dcdcaa; } /* Function */
-        .hl-com { color: #6a9955; } /* Comment */
+        /* Syntax Highlight Simple */
+        .hl-k { color: #cc7832; } /* Keyword */
+        .hl-s { color: #6a8759; } /* String */
+        .hl-f { color: #ffc66d; } /* Function */
 
         /* Responsive */
         @media (max-width: 600px) {
-            h1.title { font-size: 2.2rem; }
-            .radial-item { width: 45px; height: 45px; top: -22.5px; left: -22.5px; font-size: 14px; }
-            #modal-panel { width: 95%; right: 2.5%; top: auto; bottom: 0; transform: translateY(120%); border-radius: 12px 12px 0 0; }
-            #modal-panel.active { transform: translateY(0); }
+            h1.title { font-size: 2rem; }
+            #modal-panel { width: 100%; max-width: 100%; border-left: none; }
+            #radial-wrapper { top: 50px; right: 30px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Video Background (Fallback image used if video fails) -->
-    <video class="video-bg" autoplay muted loop playsinline poster="https://picsum.photos/1920/1080">
-        <source src="https://cdn.coverr.co/videos/coverr-code-abstract-1965/1080p.mp4" type="video/mp4">
+    <!-- Video Background -->
+    <video id="bg-video" autoplay muted loop playsinline>
+        <source src="https://f.top4top.io/m_3686bbua70.mp4" type="video/mp4">
     </video>
-    <div class="overlay-gradient"></div>
+    <div class="overlay"></div>
 
-    <!-- Hero Section -->
+    <!-- Hero Text -->
     <div id="hero">
-        <h1 class="title">Nyxo Studio</h1>
-        <p class="subtitle">Full Stack & Social Integration</p>
-    </div>
+    <h1 class="title">Nyxo Studio</h1>
+    <p class="desc" id="desc-text">
+        Welcome, I am Nyxo Studio, established since 2016.
+    </p>
+</div>
 
-    <!-- Radial Menu -->
+    <!-- Radial Menu Wrapper (Bisa Digeser) -->
     <div id="radial-wrapper">
-        <!-- Main Trigger -->
-        <div class="main-btn" id="trigger-btn">
+        <div class="trigger-btn" id="trigger">
             <i class="fa-solid fa-bars"></i>
         </div>
-        <!-- Items Container (Dynamic) -->
         <div id="items-container"></div>
     </div>
 
-    <!-- Modal Panel -->
+    <!-- Modal Content -->
     <div id="modal-panel">
         <div class="modal-header">
-            <h2 id="modal-title">TITLE</h2>
-            <div class="close-btn" id="close-modal"><i class="fa-solid fa-xmark"></i></div>
+            <h2 id="m-title">TITLE</h2>
+            <div class="close-modal" id="m-close"><i class="fa-solid fa-xmark"></i></div>
         </div>
-        <div id="modal-desc">Description...</div>
-
-        <div class="steps-container">
-            <div class="steps-title"><i class="fa-solid fa-list-ol"></i> Penjelasan Kode (Step-by-Step)</div>
-            <ul class="step-list" id="steps-list">
-                <!-- Steps will be injected here -->
-            </ul>
-        </div>
-
-        <div class="code-wrapper">
-            <div class="code-header">Source Code</div>
-            <pre id="modal-code">// Code here</pre>
-        </div>
+        <div id="m-content"></div>
     </div>
 
     <script>
-        // --- DATA LANGKAH DEMI LANGKAH ---
+      // ANIMASI DESC MUNCUL DARI BAWAH KE ATAS (SLOWMO)
+    document.addEventListener("DOMContentLoaded", () => {
+        const desc = document.getElementById('desc-text');
+
+        anime({
+            targets: desc,
+            opacity: [0, 1],
+            translateY: [50, 0],
+            easing: 'easeOutExpo',
+            duration: 2500, // slowmo
+            delay: 500 // tunggu setengah detik sebelum mulai
+        });
+    });
+        /* =========================================
+           DATA STEP BY STEP
+           ========================================= */
         const languages = [
-            { 
-                id: 'py', name: 'Python', icon: 'fa-brands fa-python', type: 'dev',
-                desc: 'Bahasa pemrograman tingkat tinggi yang sangat mudah dibaca, sering digunakan untuk AI dan Web.',
-                code: 'def sapa():\n    # Ini adalah komentar\n    pesan = "Halo Nyxo!"\n    print(pesan)\n\n# Memanggil fungsi\nsapa()',
-                steps: [
-                    'Baris 1: <strong>def sapa():</strong> Mendefinisikan sebuah fungsi bernama "sapa".',
-                    'Baris 2: Komentar (diawali #) tidak dieksekusi komputer.',
-                    'Baris 3: Variabel <strong>pesan</strong> menyimpan data teks.',
-                    'Baris 4: <strong>print()</strong> menampilkan teks ke layar.',
-                    'Baris 7: Memanggil fungsi sapa agar kode di dalamnya dijalankan.'
-                ]
-            },
-            { 
-                id: 'html', name: 'HTML5', icon: 'fa-brands fa-html5', type: 'dev',
-                desc: 'Struktur dasar dari halaman web.',
-                code: '<!DOCTYPE html>\n<html>\n  <body>\n    <h1>Judul Website</h1>\n  </body>\n</html>',
-                steps: [
-                    'Baris 1: Memberitahu browser bahwa ini adalah dokumen HTML5.',
-                    'Baris 2: Tag <strong>&lt;html&gt;</strong> adalah pembungkus utama.',
-                    'Baris 3: Tag <strong>&lt;body&gt;</strong> berisi konten yang terlihat.',
-                    'Baris 4: <strong>&lt;h1&gt;</strong> membuat judul besar.'
-                ]
-            },
-            { 
-                id: 'css', name: 'CSS3', icon: 'fa-brands fa-css3-alt', type: 'dev',
-                desc: 'Bahasa untuk menghias tampilan website (Warna, Font, Layout).',
-                code: '.kotak {\n  background: blue;\n  color: white;\n  padding: 20px;\n}',
-                steps: [
-                    'Baris 1: Memilih elemen HTML yang memiliki kelas <strong>.kotak</strong>.',
-                    'Baris 2: Mengubah warna latar belakang menjadi biru.',
-                    'Baris 3: Mengubah warna teks menjadi putih.',
-                    'Baris 4: Memberi jarak (jarak dalam) sebanyak 20 pixel.'
-                ]
-            },
-            { 
-                id: 'js', name: 'JavaScript', icon: 'fa-brands fa-js', type: 'dev',
-                desc: 'Otak dari website interaktif. Mengatur logika dan gerakan.',
-                code: 'const klik = () => {\n  alert("Tombol ditekan!");\n};',
-                steps: [
-                    'Baris 1: <strong>const klik = () => {</strong> Membuat fungsi modern (Arrow Function).',
-                    'Baris 2: <strong>alert()</strong> memunculkan jendela pop-up.',
-                    'Baris 3: Menutup blok fungsi.'
-                ]
-            },
-            { 
-                id: 'php', name: 'PHP', icon: 'fa-brands fa-php', type: 'dev',
-                desc: 'Bahasa server-side untuk membuat website dinamis.',
-                code: '<?php\necho "Hello World";\n?>',
-                steps: [
-                    'Baris 1: Membuka kode PHP.',
-                    'Baris 2: <strong>echo</strong> mengirim teks ke browser.',
-                    'Baris 3: Menutup kode PHP.'
-                ]
-            },
-            { 
-                id: 'java', name: 'Java', icon: 'fa-brands fa-java', type: 'dev',
-                desc: 'Bahasa OOP yang kuat, digunakan Android & Enterprise.',
-                code: 'public class Main {\n  public static void main(String[] args) {\n    System.out.println("Java!");\n  }\n}',
-                steps: [
-                    'Baris 1: Mendefinisikan kelas publik bernama Main.',
-                    'Baris 2: Titik masuk utama program (Method main).',
-                    'Baris 3: Perintah mencetak teks ke konsol.'
-                ]
-            },
-            { 
-                id: 'c', name: 'C Language', icon: 'fa-solid fa-c', type: 'dev',
-                desc: 'Bahasa dasar sistem operasi dan hardware.',
-                code: '#include <stdio.h>\nint main() {\n  printf("C Power");\n  return 0;\n}',
-                steps: [
-                    'Baris 1: Memasukkan library standar input-output.',
-                    'Baris 2: Fungsi utama program.',
-                    'Baris 3: Mencetak output ke layar.'
-                ]
-            },
-            { 
-                id: 'cpp', name: 'C++', icon: 'fa-solid fa-code', type: 'dev',
-                desc: 'Versi C yang mendukung OOP, cepat dan efisien.',
-                code: '#include <iostream>\nusing namespace std;\nint main() {\n  cout << "Hello";\n}',
-                steps: [
-                    'Baris 1: Memasukkan library input-output stream C++.',
-                    'Baris 3: Fungsi utama.',
-                    'Baris 4: <strong>cout</strong> mencetak teks ke layar.'
-                ]
-            },
-            { 
-                id: 'rb', name: 'Ruby', icon: 'fa-solid fa-gem', type: 'dev',
-                desc: 'Sintaks sangat alami seperti bahasa manusia.',
-                code: 'puts "Halo Ruby"',
-                steps: [
-                    'Baris 1: <strong>puts</strong> adalah perintah mencetak teks di Ruby.'
-                ]
-            },
-            { 
-                id: 'go', name: 'Go Lang', icon: 'fa-brands fa-golang', type: 'dev',
-                desc: 'Bahasa buatan Google, cepat dan modern.',
-                code: 'package main\nimport "fmt"\nfunc main() {\n  fmt.Println("Go")\n}',
-                steps: [
-                    'Baris 1: Mendeklarasikan paket.',
-                    'Baris 3: Fungsi utama.',
-                    'Baris 4: Mencetak teks menggunakan paket fmt.'
-                ]
-            },
-            { 
-                id: 'swift', name: 'Swift', icon: 'fa-brands fa-swift', type: 'dev',
-                desc: 'Bahasa resmi untuk aplikasi iOS Apple.',
-                code: 'var sapaan = "Hello iOS"\nprint(sapaan)',
-                steps: [
-                    'Baris 1: Membuat variabel dengan otomatis mendeteksi tipe String.',
-                    'Baris 2: Mencetak isi variabel.'
-                ]
-            },
-            { 
-                id: 'ts', name: 'TypeScript', icon: 'fa-solid fa-code', type: 'dev',
-                desc: 'JavaScript dengan sistem tipe data yang ketat.',
-                code: 'let nama: string = "Nyxo";\nconsole.log(nama);',
-                steps: [
-                    'Baris 1: Membuat variabel <strong>nama</strong> yang WAJIB bertipe string.',
-                    'Baris 2: Mencetak nilai variabel.'
-                ]
-            },
-            { 
-                id: 'sql', name: 'SQL', icon: 'fa-solid fa-database', type: 'dev',
-                desc: 'Bahasa untuk bicara dengan database.',
-                code: 'SELECT * FROM users WHERE age > 18;',
-                steps: [
-                    'Baris 1: Memilih semua kolom <strong>(*)</strong> dari tabel users.',
-                    'Bagian WHERE: Hanya ambil data dimana umur lebih dari 18.'
-                ]
-            },
-            { 
-                id: 'bash', name: 'Bash', icon: 'fa-solid fa-terminal', type: 'dev',
-                desc: 'Bahasa command line untuk Linux/Mac terminal.',
-                code: '#!/bin/bash\necho "Running Script..."',
-                steps: [
-                    'Baris 1: Menandakan path interpreter bash.',
-                    'Baris 2: Mencetak teks ke terminal.'
-                ]
-            },
-            { 
-                id: 'kt', name: 'Kotlin', icon: 'fa-brands fa-android', type: 'dev',
-                desc: 'Penerus Java untuk Android yang lebih ringkas.',
-                code: 'fun main() {\n  println("Kotlin Ready")\n}',
-                steps: [
-                    'Baris 1: Mendefinisikan fungsi main.',
-                    'Baris 2: Mencetak teks.'
-                ]
-            }
-        ];
+    { 
+        id: 'py', name: 'Python', icon: 'fa-brands fa-python', type: 'dev',
+        description: 'Python is a high-level, interpreted language known for its readability and versatility. It is used for web development, data analysis, AI, automation, and more.',
+        setup: 'Download the installer from python.org. Check "Add to PATH" during installation.', 
+        debug: 'Use <code>try-except</code> blocks and <code>print()</code> statements to trace variables.',
+        code: 'print("Hello World")', 
+        tips: 'Follow PEP 8 guidelines for clean and readable code.' 
+    },
+    { 
+        id: 'html', name: 'HTML5', icon: 'fa-brands fa-html5', type: 'dev',
+        description: 'HTML5 is the standard markup language for creating web pages and web applications. It structures the content of web pages.',
+        setup: 'Create a file named <code>index.html</code> and open it in a browser (Chrome/Firefox).', 
+        debug: 'Right-click -> Inspect Element to see the DOM structure.',
+        code: '<h1>Website Title</h1>', 
+        tips: 'Use semantic tags like <header>, <main>, <article>.' 
+    },
+    { 
+        id: 'css', name: 'CSS3', icon: 'fa-brands fa-css3-alt', type: 'dev',
+        description: 'CSS3 is used to style HTML elements and make web pages visually appealing, controlling layout, colors, fonts, and animations.',
+        setup: 'Create <code>style.css</code> and link it in HTML: <link rel="stylesheet" href="style.css">', 
+        debug: 'Use the Computed Styles panel in browser developer tools to inspect styles.',
+        code: '.container {\n  color: cyan;\n  display: flex;\n}', 
+        tips: 'Master Flexbox and Grid layout for responsive design.' 
+    },
+    { 
+        id: 'js', name: 'JavaScript', icon: 'fa-brands fa-js', type: 'dev',
+        description: 'JavaScript is a programming language used to create interactive web elements like animations, forms, and dynamic content.',
+        setup: 'Run directly in the browser console or install Node.js for backend.', 
+        debug: 'Use <code>console.log()</code> and <code>debugger</code> to trace code execution.',
+        code: 'console.log("JS Running");', 
+        tips: 'Understand asynchronous programming (Promises, Async/Await).' 
+    },
+    { 
+        id: 'php', name: 'PHP', icon: 'fa-brands fa-php', type: 'dev',
+        description: 'PHP is a server-side scripting language used for web development to create dynamic and database-driven websites.',
+        setup: 'Install XAMPP or Laragon for local server (Apache + MySQL).', 
+        debug: 'Use <code>var_dump()</code> and enable <code>error_reporting(E_ALL)</code>.',
+        code: '<?php echo "Hello PHP"; ?>', 
+        tips: 'Always sanitize user input to prevent SQL Injection.' 
+    },
+    { 
+        id: 'java', name: 'Java', icon: 'fa-brands fa-java', type: 'dev',
+        description: 'Java is a high-level, class-based, object-oriented language used for web applications, mobile apps (Android), and enterprise software.',
+        setup: 'Install JDK (Java Development Kit) and IDE like IntelliJ IDEA or Eclipse.', 
+        debug: 'Read the Stack Trace from the top to find the source of the error.',
+        code: 'System.out.println("Java Code");', 
+        tips: 'Master OOP concepts: Encapsulation, Inheritance, Polymorphism.' 
+    },
+    { 
+        id: 'c', name: 'C', icon: 'fa-solid fa-c', type: 'dev',
+        description: 'C is a low-level, procedural language used for system programming, operating systems, and embedded devices.',
+        setup: 'Install GCC compiler via MinGW or use Code::Blocks IDE.', 
+        debug: 'Watch for segmentation faults, often related to memory pointers.',
+        code: 'printf("Language C");', 
+        tips: 'Always free allocated memory using <code>free()</code>.' 
+    },
+    { 
+        id: 'cpp', name: 'C++', icon: 'fa-solid fa-code', type: 'dev',
+        description: 'C++ is an object-oriented language extending C, used for software development, games, and high-performance applications.',
+        setup: 'Install Visual Studio Community or MinGW-w64.', 
+        debug: 'Use integrated debugger in IDE for step-by-step execution.',
+        code: 'std::cout << "C++" << std::endl;', 
+        tips: 'Use STL (Standard Template Library) and smart pointers for safer memory management.' 
+    },
+    { 
+        id: 'rb', name: 'Ruby', icon: 'fa-solid fa-gem', type: 'dev',
+        description: 'Ruby is a dynamic, open-source language focused on simplicity and productivity, widely used with Rails framework for web apps.',
+        setup: 'Use RubyInstaller for Windows or rbenv for Mac/Linux.', 
+        debug: 'Use <code>pry</code> gem for interactive debugging in terminal.',
+        code: 'puts "Ruby Magic"', 
+        tips: 'Follow "Convention over Configuration" principles.' 
+    },
+    { 
+        id: 'go', name: 'Go', icon: 'fa-brands fa-golang', type: 'dev',
+        description: 'Go (Golang) is a statically typed language designed for simplicity and high performance, used for backend systems and concurrent programming.',
+        setup: 'Download official installer from go.dev.', 
+        debug: 'Explicit error handling: check <code>if err != nil</code> after functions.',
+        code: 'fmt.Println("Hello Go")', 
+        tips: 'Learn Goroutines and Channels for concurrent programming.' 
+    },
+    { 
+        id: 'sql', name: 'SQL', icon: 'fa-solid fa-database', type: 'dev',
+        description: 'SQL is used to manage and query relational databases, enabling data retrieval, insertion, and management.',
+        setup: 'Install MySQL Workbench, PostgreSQL, or SQLite Browser.', 
+        debug: 'Use <code>EXPLAIN</code> before SELECT to check query performance.',
+        code: 'SELECT * FROM users WHERE active=1;', 
+        tips: 'Use indexes on frequently queried columns for optimization.' 
+    },
+    { 
+        id: 'bash', name: 'Bash', icon: 'fa-solid fa-terminal', type: 'dev',
+        description: 'Bash is a command-line shell used for automation, scripting, and managing Unix/Linux systems.',
+        setup: 'Use Git Bash (Windows), Terminal (Mac/Linux), or PowerShell.', 
+        debug: 'Run scripts with <code>bash -x script.sh</code> to trace execution.',
+        code: 'echo "Hello Terminal"', 
+        tips: 'Learn piping (|) and redirection (>, >>).' 
+    },
+    { 
+        id: 'ts', name: 'TypeScript', icon: 'fa-brands fa-js', type: 'dev',
+        description: 'TypeScript is a superset of JavaScript with static typing, making code more reliable and maintainable for large projects.',
+        setup: 'Install Node.js and npm, then <code>npm install -g typescript</code>.', 
+        debug: 'Use <code>tsc --noEmit</code> to check for type errors.',
+        code: 'let greeting: string = "Hello TypeScript";\nconsole.log(greeting);', 
+        tips: 'Use strict typing to prevent runtime errors.' 
+    },
+    { 
+        id: 'swift', name: 'Swift', icon: 'fa-brands fa-swift', type: 'dev',
+        description: 'Swift is Apple’s programming language for iOS, macOS, and watchOS, designed for safety and performance.',
+        setup: 'Install Xcode on Mac.', 
+        debug: 'Use Xcode debugger and breakpoints for step-by-step debugging.',
+        code: 'print("Hello Swift")', 
+        tips: 'Learn optionals and error handling with <code>try-catch</code>.' 
+    },
+    { 
+        id: 'kotlin', name: 'Kotlin', icon: 'fa-brands fa-kotlin', type: 'dev',
+        description: 'Kotlin is a modern language for Android development and backend applications, fully interoperable with Java.',
+        setup: 'Install IntelliJ IDEA or Android Studio.', 
+        debug: 'Use <code>println()</code> and debugger in IDE to trace errors.',
+        code: 'fun main() {\n  println("Hello Kotlin")\n}', 
+        tips: 'Understand null-safety and Kotlin coroutines for async tasks.' 
+    }
+];
 
         const socials = [
+            { name: 'WhatsApp', icon: 'fa-brands fa-whatsapp', type: 'soc', link: 'https://wa.me/' },
             { name: 'GitHub', icon: 'fa-brands fa-github', type: 'soc', link: 'https://github.com' },
-            { name: 'Twitter', icon: 'fa-brands fa-twitter', type: 'soc', link: 'https://twitter.com' },
-            { name: 'LinkedIn', icon: 'fa-brands fa-linkedin', type: 'soc', link: 'https://linkedin.com' },
-            { name: 'Instagram', icon: 'fa-brands fa-instagram', type: 'soc', link: 'https://instagram.com' }
+            { name: 'Telegram', icon: 'fa-brands fa-telegram', type: 'soc', link: 'https://t.me/' },
+            { name: 'TikTok', icon: 'fa-brands fa-tiktok', type: 'soc', link: 'https://tiktok.com' },
+            { name: 'Instagram', icon: 'fa-brands fa-instagram', type: 'soc', link: 'https://instagram.com' },
+            { name: 'LinkedIn', icon: 'fa-brands fa-linkedin', type: 'soc', link: 'https://linkedin.com' }
         ];
 
-        // --- DOM ELEMENTS ---
+        /* =========================================
+           LOGIC PROGRAM UTAMA
+           ========================================= */
+        
+        // Element Selection
         const wrapper = document.getElementById('radial-wrapper');
-        const triggerBtn = document.getElementById('trigger-btn');
+        const trigger = document.getElementById('trigger');
         const itemsContainer = document.getElementById('items-container');
-        const modalPanel = document.getElementById('modal-panel');
-        const closeModal = document.getElementById('close-modal');
+        const modal = document.getElementById('modal-panel');
         
-        let isOpen = false;
+        // State Variables
+        let menuState = 'closed'; // closed, categories, developer, social
         let isDragging = false;
-        
-        // --- DRAG & CLICK LOGIC FIX ---
-        // Kita pisahkan logic drag dan click agar tidak bentrok.
-        let startX, startY, initialLeft, initialTop;
-        
-        // 1. Mouse Down (Mulai Drag atau Click)
-        wrapper.addEventListener('mousedown', startAction);
-        wrapper.addEventListener('touchstart', startAction, {passive: false});
+        let startPos = { x: 0, y: 0 };
+        let initialWrapperPos = { x: 0, y: 0 };
 
-        function startAction(e) {
-            if (e.target.closest('.radial-item')) return; // Jangan drag jika klik item anak
+        // --- 1. DRAG LOGIC (GESER MENU) ---
+        
+        trigger.addEventListener('mousedown', startDrag);
+        trigger.addEventListener('touchstart', startDrag, {passive: false});
 
-            isDragging = false; // Asumsi awal bukan drag
+        function startDrag(e) {
+            // Cek agar drag tidak memicu saat user ingin klik item
+            if (e.target.closest('.radial-item')) return;
+
             const evt = e.type === 'touchstart' ? e.touches[0] : e;
-            startX = evt.clientX;
-            startY = evt.clientY;
+            isDragging = false; // Reset flag drag
+            startPos = { x: evt.clientX, y: evt.clientY };
+            initialWrapperPos = { x: wrapper.offsetLeft, y: wrapper.offsetTop };
             
-            const rect = wrapper.getBoundingClientRect();
-            initialLeft = rect.left;
-            initialTop = rect.top;
+            trigger.style.cursor = 'grabbing';
 
-            triggerBtn.style.cursor = 'grabbing';
-
-            document.addEventListener('mousemove', moveAction);
-            document.addEventListener('touchmove', moveAction, {passive: false});
-            document.addEventListener('mouseup', endAction);
-            document.addEventListener('touchend', endAction);
+            // Pasang listener global saat mouse/touch ditekan
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('touchmove', onDrag, {passive: false});
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
         }
 
-        // 2. Mouse Move (Lakukan Drag)
-        function moveAction(e) {
-            e.preventDefault();
-            isDragging = true; // Ada pergerakan, ini adalah Drag
+        function onDrag(e) {
+            e.preventDefault(); // Mencegah scroll pada mobile saat drag
             const evt = e.type === 'touchmove' ? e.touches[0] : e;
             
-            const dx = evt.clientX - startX;
-            const dy = evt.clientY - startY;
+            const dx = evt.clientX - startPos.x;
+            const dy = evt.clientY - startPos.y;
 
-            // Update posisi
-            let newLeft = initialLeft + dx;
-            let newTop = initialTop + dy;
-
-            // Batas layar
-            newLeft = Math.max(40, Math.min(window.innerWidth - 40, newLeft));
-            newTop = Math.max(40, Math.min(window.innerHeight - 40, newTop));
-
-            wrapper.style.left = newLeft + 'px';
-            wrapper.style.top = newTop + 'px';
-        }
-
-        // 3. Mouse Up (Selesai)
-        function endAction(e) {
-            document.removeEventListener('mousemove', moveAction);
-            document.removeEventListener('touchmove', moveAction);
-            document.removeEventListener('mouseup', endAction);
-            document.removeEventListener('touchend', endAction);
-            
-            triggerBtn.style.cursor = 'grab';
-
-            // Hanya jalankan toggle menu JIKA tidak sedang drag (Click biasa)
-            if (!isDragging) {
-                toggleMenu();
-            }
-        }
-
-        // --- MENU TOGGLE & RENDER ---
-        function toggleMenu() {
-            isOpen = !isOpen;
-            
-            if (isOpen) {
-                // Render items baru setiap kali dibuka (opsional, tapi ini memastikan bersih)
-                renderAllItems();
-                triggerBtn.classList.add('open');
-                triggerBtn.querySelector('i').className = "fa-solid fa-times";
-            } else {
-                // Animasi tutup
-                anime({
-                    targets: '.radial-item',
-                    opacity: 0,
-                    scale: 0,
-                    duration: 300,
-                    easing: 'easeInBack',
-                    complete: () => {
-                        itemsContainer.innerHTML = '';
-                    }
-                });
-                triggerBtn.classList.remove('open');
-                triggerBtn.querySelector('i').className = "fa-solid fa-bars";
-                hideModal();
-            }
-        }
-
-        function renderAllItems() {
-            itemsContainer.innerHTML = '';
-            // Gabungkan Developer dan Social Media
-            const allItems = [...languages, ...socials];
-            const total = allItems.length;
-            
-            // Radius dinamis berdasarkan jumlah item agar muat
-            const radius = window.innerWidth < 600 ? 140 : 220;
-
-            allItems.forEach((item, index) => {
-                const btn = document.createElement('div');
-                const isDev = item.type === 'dev';
-                btn.className = `radial-item ${isDev ? 'item-dev' : 'item-soc'}`;
-                btn.innerHTML = `<i class="${item.icon}"></i><span>${item.name}</span>`;
+            // Jika gerakan > 5px, kita anggap ini DRAG, bukan KLIK
+            if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+                isDragging = true;
                 
-                // Event Click Item
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Cegah bubble ke document
-                    if (item.link) {
-                        window.open(item.link, '_blank');
-                    } else {
-                        showModal(item);
-                    }
-                });
+                let newX = initialWrapperPos.x + dx;
+                let newY = initialWrapperPos.y + dy;
 
-                itemsContainer.appendChild(btn);
+                // Batasi agar tidak keluar layar
+                newX = Math.max(30, Math.min(window.innerWidth - 30, newX));
+                newY = Math.max(30, Math.min(window.innerHeight - 30, newY));
+
+                wrapper.style.left = newX + 'px';
+                wrapper.style.top = newY + 'px';
+            }
+        }
+
+        function endDrag() {
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('touchmove', onDrag);
+            document.removeEventListener('mouseup', endDrag);
+            document.removeEventListener('touchend', endDrag);
+
+            trigger.style.cursor = 'grab';
+        }
+
+        // --- 2. CLICK LOGIC (BUKA/TUTUP MENU) ---
+
+        // Kita gunakan 'click' event khusus untuk toggle, 
+        // tapi kita cek flag 'isDragging' untuk memastikan user tidak sedang menggeser.
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation(); // Mencegah bubble ke document
+            
+            if (isDragging) {
+                isDragging = false; // Reset flag
+                return; // Jangan lakukan apa-apa jika ini drag
+            }
+
+            toggleMenu();
+        });
+
+        function toggleMenu() {
+            if (menuState === 'closed') {
+                openCategories();
+            } else {
+                closeMenu();
+            }
+        }
+
+        // Fungsi Tutup Menu Total
+        function closeMenu() {
+            menuState = 'closed';
+            trigger.classList.remove('active');
+            trigger.querySelector('i').className = "fa-solid fa-bars"; // Kembali ke icon bars
+            
+            // Animasi tutup item
+            anime({
+                targets: '.radial-item',
+                opacity: 0, 
+                scale: 0, 
+                duration: 300, 
+                easing: 'easeInBack',
+                complete: () => { 
+                    itemsContainer.innerHTML = ''; // Hapus elemen DOM setelah animasi
+                }
             });
 
-            // Animasi Lingkaran
-            anime.set('.radial-item', { opacity: 0, scale: 0 });
+            // Tutup modal jika terbuka
+            modal.classList.remove('open');
+        }
 
+        // --- 3. RENDER MENU ITEM ---
+
+        function createItem(name, icon, cls, onClick) {
+            const el = document.createElement('div');
+            el.className = `radial-item ${cls}`;
+            el.innerHTML = `<i class="${icon}"></i><span>${name}</span>`;
+            
+            // Mencegah event klik item bubble ke document (yang bisa memicu close menu)
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                onClick();
+            });
+            
+            return el;
+        }
+
+        // Buka Menu Utama (Kategori: Dev & Soc)
+        function openCategories() {
+            menuState = 'categories';
+            trigger.classList.add('active');
+            trigger.querySelector('i').className = "fa-solid fa-times"; // Ubah icon jadi X
+
+            itemsContainer.innerHTML = '';
+            
+            const btnDev = createItem('Developer', 'fa-solid fa-code', 'item-cat', () => openSubMenu('developer'));
+            const btnSoc = createItem('Social', 'fa-solid fa-users', 'item-cat', () => openSubMenu('social'));
+
+            itemsContainer.appendChild(btnDev);
+            itemsContainer.appendChild(btnSoc);
+
+            // Animasi Muncul Kategori
+            anime.set('.radial-item', { opacity: 0, scale: 0 });
             anime({
                 targets: '.radial-item',
                 opacity: [0, 1],
                 scale: [0, 1],
-                // Hitung posisi lingkaran penuh
-                translateX: (el, i) => {
-                    const angle = (360 / total) * i; // Derajat
-                    const rad = angle * (Math.PI / 180);
-                    return Math.cos(rad) * radius;
-                },
-                translateY: (el, i) => {
-                    const angle = (360 / total) * i; // Derajat
-                    const rad = angle * (Math.PI / 180);
-                    return Math.sin(rad) * radius;
-                },
-                delay: anime.stagger(40), // Efek spiral
-                duration: 600,
-                easing: 'easeOutExpo'
+                // Posisi Relatif: Dev di kiri, Soc di bawah tombol utama
+                translateX: (el, i) => i === 0 ? -70 : 0, 
+                translateY: (el, i) => i === 0 ? 0 : 70,
+                delay: anime.stagger(100), 
+                duration: 500, 
+                easing: 'easeOutElastic(1, .8)',
+                begin: () => {
+                    // Aktifkan interaksi saat animasi mulai
+                    document.querySelectorAll('.radial-item').forEach(el => el.style.pointerEvents = 'auto');
+                }
             });
-            
-            // Aktifkan pointer events
-            document.querySelectorAll('.radial-item').forEach(el => el.style.pointerEvents = 'auto');
         }
 
-        // --- MODAL LOGIC ---
-        function showModal(item) {
-            document.getElementById('modal-title').innerText = item.name;
-            document.getElementById('modal-desc').innerText = item.desc;
+        // Buka Sub Menu (List Bahasa / Social)
+        function openSubMenu(type) {
+            menuState = type;
+            itemsContainer.innerHTML = '';
             
-            // Render Steps
-            const stepsList = document.getElementById('steps-list');
-            stepsList.innerHTML = '';
-            if (item.steps) {
-                item.steps.forEach((step, idx) => {
-                    const li = document.createElement('li');
-                    li.className = 'step-item';
-                    li.innerHTML = `<strong>${idx + 1}.</strong> ${step}`;
-                    stepsList.appendChild(li);
+            const items = type === 'developer' ? languages : socials;
+            
+            // 1. Tambahkan Tombol BACK
+            const btnBack = createItem('Back', 'fa-solid fa-arrow-left', 'item-back', () => openCategories());
+            itemsContainer.appendChild(btnBack);
+
+            // 2. Tambahkan Item-item
+            items.forEach(item => {
+                const btn = createItem(item.name, item.icon, `item-${type}`, () => {
+                    if(type === 'developer') showModal(item);
+                    else window.open(item.link, '_blank');
                 });
-            } else {
-                stepsList.innerHTML = '<li class="step-item">Klik tombol di atas untuk mengunjungi profil.</li>';
-            }
+                itemsContainer.appendChild(btn);
+            });
 
-            // Render Code with simple highlight
-            const codeBlock = document.getElementById('modal-code');
-            if (item.code) {
-                // Simple regex highlight
-                let html = item.code
-                    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-                    .replace(/\b(const|let|var|def|class|public|private|import|from|return|function|echo|print|if|else|while|for|package)\b/g, '<span class="hl-kw">$1</span>')
-                    .replace(/(["'])(?:(?=(\\?))\2.)*?\1/g, '<span class="hl-str">$&</span>')
-                    .replace(/\b(console|log|print|println|printf|puts|echo)\b/g, '<span class="hl-fn">$1</span>')
-                    .replace(/(\/\/.*|\/\*[\s\S]*?\*\/|#.*)/g, '<span class="hl-com">$1</span>');
-                codeBlock.innerHTML = html;
-            } else {
-                codeBlock.innerHTML = '// Tidak ada kode untuk item ini';
-            }
+            // 3. Animasi Lingkaran Penuh
+            const radius = window.innerWidth < 600 ? 110 : 160;
+const totalItems = items.length + 1; // +1 karena tombol back
 
-            modalPanel.classList.add('active');
+// Sudut mulai agar menu muncul ke kanan-bawah dari tombol di pojok kiri atas
+const startAngle = 45; // dulu -135 untuk kanan atas, sekarang 45 untuk kiri atas
+
+anime.set('.radial-item', { opacity: 0, scale: 0, translateX: 0, translateY: 0 });
+
+anime({
+    targets: '.radial-item',
+    opacity: [0, 1],
+    scale: [0, 1],
+    translateX: (el, i) => {
+        const angle = startAngle + (i * (270 / totalItems)); // Menyebar 270 derajat seperti versi asli
+        return Math.cos(angle * Math.PI / 180) * radius;
+    },
+    translateY: (el, i) => {
+        const angle = startAngle + (i * (270 / totalItems));
+        return Math.sin(angle * Math.PI / 180) * radius;
+    },
+    delay: anime.stagger(50),
+    duration: 600,
+    easing: 'easeOutExpo',
+    begin: () => {
+        document.querySelectorAll('.radial-item').forEach(el => el.style.pointerEvents = 'auto');
+    }
+});
         }
 
-        function hideModal() {
-            modalPanel.classList.remove('active');
+        // --- 4. MODAL CONTENT (TAMPILKAN FITUR) ---
+
+        function showModal(data) {
+            document.getElementById('m-title').innerText = data.name;
+            
+            // Escape HTML untuk code block
+            const safeCode = data.code.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            
+            const html = `
+                <div class="section-title"><i class="fa-solid fa-download"></i> Step 1: Setup</div>
+                <div class="text-content">${data.setup}</div>
+                
+                <div class="section-title"><i class="fa-solid fa-bug"></i> Step 2: Debugging</div>
+                <div class="text-content">${data.debug}</div>
+                
+                <div class="section-title"><i class="fa-solid fa-code"></i> Step 3: Code Snippet</div>
+                <div class="code-block"><span class="hl-k">var</span> result = <span class="hl-s">"${safeCode}"</span>;</div>
+                
+                <div class="section-title"><i class="fa-solid fa-lightbulb"></i> Expert Tips</div>
+                <div class="text-content">${data.tips}</div>
+            `;
+            document.getElementById('m-content').innerHTML = html;
+            modal.classList.add('open');
         }
 
-        closeModal.addEventListener('click', hideModal);
-
-        // Click di luar modal/menu untuk menutup
-        document.addEventListener('click', (e) => {
-            if (isOpen && !wrapper.contains(e.target) && !modalPanel.contains(e.target)) {
-                toggleMenu();
-            }
+        // Event Listener Tutup Modal
+        document.getElementById('m-close').addEventListener('click', (e) => {
+            e.stopPropagation();
+            modal.classList.remove('open');
         });
 
-        // --- INIT ---
-        // Center posisi awal
-        window.addEventListener('load', () => {
-            wrapper.style.left = (window.innerWidth / 2) + 'px';
-            wrapper.style.top = (window.innerHeight / 2) + 'px';
+        // --- 5. GLOBAL CLICK (TUTUP JIKA KLIK DI LUAR) ---
+        
+        document.addEventListener('click', (e) => {
+            // Cek apakah klik terjadi DI LUAR wrapper (menu) DAN DI LUAR modal (panel)
+            const isClickInsideWrapper = wrapper.contains(e.target);
+            const isClickInsideModal = modal.contains(e.target);
+            
+            if (!isClickInsideWrapper && !isClickInsideModal) {
+                closeMenu();
+            }
         });
 
     </script>
